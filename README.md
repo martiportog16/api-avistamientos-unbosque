@@ -94,7 +94,7 @@ curl -X POST http://127.0.0.1:8000/avistamientos \
   -H "Content-Type: application/json" \
   -d '{"especie":"colibri","lugar":"Casa Fernando,"fecha":"2026-03-03","observador":"Fernando"}'
 ```
-Respuesta: `201` con el avistamiento creado. Si faltan datos: `400`.
+Respuesta: `201` con el avistamiento creado. Si faltan datos o se coloca un formato distinto de fecha: `400`.
 
 ### Actualizar
 ```bash
