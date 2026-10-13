@@ -1,17 +1,32 @@
 # API de Avistamientos de Aves
 
-API REST para registrar avistamientos de aves. Trabajo individual de Ingeniería de Software 2. Universidad El Bosque.
+API REST para registrar los avistamientos de aves que la gente observa en el campo. Permite crear, consultar, actualizar y eliminar avistamientos (especie, lugar, fecha y observador) y guardarlos en una base de datos, para llevar un registro ordenado en lugar de apuntes sueltos.
 
-**Tecnologías:** Python, FastAPI, SQLite.
+Trabajo individual de Ingeniería de Software 2.
 
-**IA utilizada:** Use Claude modelo Sonnet 5.5 como apoyo para estructurar y explicar el código. 
+## Características principales
 
-## Requisitos
+- Registrar, listar, consultar, actualizar y eliminar avistamientos.
+- Respuestas en JSON con el código de estado HTTP correcto (200, 201, 204, 400, 404).
+- Validación de datos: si falta algún campo, responde 400.
+- Datos guardados en una base de datos SQLite que se crea sola.
+- Resumen de cuántos avistamientos hay por especie (bonus).
+- Pruebas automáticas de los endpoints (bonus).
 
-- Python 3.10 o superior
-- Git
+## Tecnologías utilizadas
+
+- **Python 3.10+**
+- **FastAPI** (framework de la API) y **Uvicorn** (servidor)
+- **Pydantic** (validación de datos)
+- **SQLite** 
+- **pytest** y **httpx** (pruebas)
+- **Git y GitHub**
+
+**IA utilizada:** Claude (modelo Sonnet 5.5) como apoyo para estructurar y explicar el código. Hice mis propias pruebas para entender y explicar el código entregado.
 
 ## Instalación y ejecución
+
+Requisitos: Python 3.10 o superior y Git.
 
 ```bash
 git clone https://github.com/martiportog16/api-avistamientos-unbosque.git
@@ -30,9 +45,15 @@ uvicorn app.main:app --reload
 ```
 
 - La API queda en http://127.0.0.1:8000
-- Documentación interactiva (probar endpoints desde el navegador): http://127.0.0.1:8000/docs
-- La base de datos SQLite (`avistamientos.db`) se crea sola al iniciar.
+- Documentación interactiva para probar los endpoints desde el navegador: http://127.0.0.1:8000/docs
+- La base de datos (`avistamientos.db`) se crea sola al iniciar.
 - En Mac/Linux puede ser `python3` en lugar de `python`.
+
+### Pruebas
+
+```bash
+pytest
+```
 
 ## Modelo: avistamiento
 
@@ -71,7 +92,7 @@ curl http://127.0.0.1:8000/avistamientos/1
 ```bash
 curl -X POST http://127.0.0.1:8000/avistamientos \
   -H "Content-Type: application/json" \
-  -d '{"especie":"colibrí","lugar":"Parque Simón Bolívar","fecha":"2026-09-20","observador":"Ana"}'
+  -d '{"especie":"colibri","lugar":"Casa Fernando,"fecha":"2026-03-03","observador":"Fernando"}'
 ```
 Respuesta: `201` con el avistamiento creado. Si faltan datos: `400`.
 
@@ -79,7 +100,7 @@ Respuesta: `201` con el avistamiento creado. Si faltan datos: `400`.
 ```bash
 curl -X PUT http://127.0.0.1:8000/avistamientos/1 \
   -H "Content-Type: application/json" \
-  -d '{"especie":"colibrí","lugar":"Jardín Botánico","fecha":"2026-09-21","observador":"Ana"}'
+  -d '{"especie":"colibri","lugar":"Casa Martin","fecha":"2026-04-04","observador":"Martin"}'
 ```
 
 ### Eliminar
@@ -92,20 +113,21 @@ Respuesta: `204` sin contenido, o `404` si no existe.
 ```bash
 curl http://127.0.0.1:8000/avistamientos/resumen
 ```
-Ejemplo de respuesta: `[{"especie":"colibrí","total":3}]`
+Ejemplo de respuesta: `[{"especie":"colibri","total":3}]`
 
-## Pruebas (bonus)
-
-```bash
-pytest
-```
-
-## Estructura
+## Estructura del proyecto
 
 ```
 app/
   database.py   conexión y tabla SQLite
   schemas.py    modelos y validación de datos
   main.py       endpoints
-tests/          pruebas de integración
+tests/          pruebas de los endpoints
+requirements.txt
+pytest.ini
 ```
+
+## Autor
+
+**Martin Daniel Porto Gutierrez**, estudiante de Ingeniería de Sistemas-Universidad El Bosque
+GitHub: [@martiportog16](https://github.com/martiportog16)
