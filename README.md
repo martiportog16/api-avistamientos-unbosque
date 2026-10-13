@@ -26,7 +26,7 @@ Trabajo individual de Ingeniería de Software 2.
 
 ## Instalación y ejecución
 
-Requisitos: Python 3.10 o superior y Git.
+Requisitos: Python 3.10 o superior (probado con Python 3.13) y Git.
 
 ```bash
 git clone https://github.com/martiportog16/api-avistamientos-unbosque.git
