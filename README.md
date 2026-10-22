@@ -115,6 +115,20 @@ curl http://127.0.0.1:8000/avistamientos/resumen
 ```
 Ejemplo de respuesta: `[{"especie":"colibri","total":3}]`
 
+# API de Avistamientos de Aves - Ingeniería de Software 2
+
+## Ejecución de Pruebas y Cobertura
+
+Para correr la suite completa de pruebas (unitarias y de integración):
+```bash
+pytest
+```
+Para generar el reporte de cobertura en consola indicando las líneas faltantes:
+
+```bash
+pytest --cov=app --cov-report=term-missing
+```
+
 ## Estructura del proyecto
 
 ```

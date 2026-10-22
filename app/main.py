@@ -4,17 +4,24 @@ from fastapi.responses import JSONResponse
 
 from app.database import get_connection, init_db
 from app.schemas import AvistamientoIn, AvistamientoOut
+from app.validador import ValidadorDeAvistamiento
 
 app = FastAPI(title="API de Avistamientos de Aves")
+validador = ValidadorDeAvistamiento()
 
 init_db()
 
 
-# FastAPI responde 422 por defecto cuando faltan datos.
-# El enunciado pide 400, por eso se cambia aquí.
+# Si falta por completo una llave en el JSON (ej. no envían "observador"),
+# responde 400 indicando qué campo falló.
 @app.exception_handler(RequestValidationError)
 async def datos_invalidos(request, exc):
-    return JSONResponse(status_code=400, content={"detail": "Faltan datos o son inválidos"})
+    errores = exc.errors()
+    campo = errores[0]["loc"][-1] if errores and "loc" in errores[0] else "datos"
+    return JSONResponse(
+        status_code=400,
+        content={"detail": f"El campo '{campo}' es obligatorio o inválido"},
+    )
 
 
 @app.get("/avistamientos", response_model=list[AvistamientoOut])
@@ -49,6 +56,16 @@ def ver(id: int):
 
 @app.post("/avistamientos", response_model=AvistamientoOut, status_code=status.HTTP_201_CREATED)
 def crear(datos: AvistamientoIn):
+    try:
+        validador.validar(
+            especie=datos.especie,
+            lugar=datos.lugar,
+            fecha=datos.fecha,
+            observador=datos.observador,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     conn = get_connection()
     cur = conn.execute(
         "INSERT INTO avistamientos (especie, lugar, fecha, observador) VALUES (?, ?, ?, ?)",
@@ -62,6 +79,16 @@ def crear(datos: AvistamientoIn):
 
 @app.put("/avistamientos/{id}", response_model=AvistamientoOut)
 def actualizar(id: int, datos: AvistamientoIn):
+    try:
+        validador.validar(
+            especie=datos.especie,
+            lugar=datos.lugar,
+            fecha=datos.fecha,
+            observador=datos.observador,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     conn = get_connection()
     cur = conn.execute(
         "UPDATE avistamientos SET especie = ?, lugar = ?, fecha = ?, observador = ? WHERE id = ?",
