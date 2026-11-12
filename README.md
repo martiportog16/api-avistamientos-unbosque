@@ -129,17 +129,30 @@ Para generar el reporte de cobertura en consola indicando las líneas faltantes:
 pytest --cov=app --cov-report=term-missing
 ```
 
-## Estructura del proyecto
+## Estructura del proyecto (arquitectura hexagonal)
 
 ```
 app/
-  database.py   conexión y tabla SQLite
-  schemas.py    modelos y validación de datos
-  main.py       endpoints
-tests/          pruebas de los endpoints
-requirements.txt
-pytest.ini
+  nucleo/                     el hexágono: reglas de negocio, sin FastAPI ni SQL
+    modelo.py                 Avistamiento
+    validador.py              regla de validación
+    puertos.py                interfaces Reloj y RepositorioAvistamientos
+    servicio.py               casos de uso (crear, listar, ver, actualizar, eliminar, resumen)
+    errores.py                AvistamientoNoEncontrado
+  adaptadores/
+    entrada/
+      api_fastapi.py          endpoints REST (adaptador de entrada)
+      esquemas.py             formato JSON de entrada y salida (Pydantic)
+    salida/
+      repositorio_sqlite.py   implementa RepositorioAvistamientos con SQLite
+      reloj_sistema.py        implementa Reloj con la fecha del sistema
+  main.py                     conecta los adaptadores con el núcleo
+tests/                        pruebas unitarias y de integración
+docs/                         documento del Taller 5
 ```
+
+Las dependencias apuntan siempre hacia el núcleo: los adaptadores importan
+el núcleo, y el núcleo no importa nada de los adaptadores.
 
 ## Autor
 
