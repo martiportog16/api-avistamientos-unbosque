@@ -9,7 +9,7 @@ _tmp.close()
 os.environ["AVISTAMIENTOS_DB"] = _tmp.name
 
 from fastapi.testclient import TestClient  # noqa: E402
-from app.database import get_connection  # noqa: E402
+from app.adaptadores.salida.repositorio_sqlite import get_connection  # noqa: E402
 from app.main import app  # noqa: E402
 
 client = TestClient(app)

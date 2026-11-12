@@ -2,15 +2,17 @@ from fastapi import FastAPI, HTTPException, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from app.database import get_connection, init_db
 from app.schemas import AvistamientoIn, AvistamientoOut
+from dataclasses import asdict
+
 from app.adaptadores.salida.reloj_sistema import RelojSistema
+from app.adaptadores.salida.repositorio_sqlite import RepositorioSQLite
+from app.nucleo.modelo import Avistamiento
 from app.nucleo.validador import ValidadorDeAvistamiento
 
 app = FastAPI(title="API de Avistamientos de Aves")
 validador = ValidadorDeAvistamiento(reloj=RelojSistema())
-
-init_db()
+repositorio = RepositorioSQLite()
 
 
 # Si falta por completo una llave en el JSON (ej. no envían "observador"),
@@ -27,32 +29,22 @@ async def datos_invalidos(request, exc):
 
 @app.get("/avistamientos", response_model=list[AvistamientoOut])
 def listar():
-    conn = get_connection()
-    filas = conn.execute("SELECT * FROM avistamientos").fetchall()
-    conn.close()
-    return [dict(f) for f in filas]
+    return [asdict(a) for a in repositorio.listar()]
 
 
 # BONUS: debe ir ANTES de /avistamientos/{id}, si no FastAPI
 # interpretaría la palabra "resumen" como un id.
 @app.get("/avistamientos/resumen")
 def resumen():
-    conn = get_connection()
-    filas = conn.execute(
-        "SELECT especie, COUNT(*) AS total FROM avistamientos GROUP BY especie"
-    ).fetchall()
-    conn.close()
-    return [dict(f) for f in filas]
+    return [{"especie": e, "total": t} for e, t in repositorio.contar_por_especie()]
 
 
 @app.get("/avistamientos/{id}", response_model=AvistamientoOut)
 def ver(id: int):
-    conn = get_connection()
-    fila = conn.execute("SELECT * FROM avistamientos WHERE id = ?", (id,)).fetchone()
-    conn.close()
-    if fila is None:
+    encontrado = repositorio.obtener(id)
+    if encontrado is None:
         raise HTTPException(status_code=404, detail="Avistamiento no encontrado")
-    return dict(fila)
+    return asdict(encontrado)
 
 
 @app.post("/avistamientos", response_model=AvistamientoOut, status_code=status.HTTP_201_CREATED)
@@ -67,15 +59,8 @@ def crear(datos: AvistamientoIn):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    conn = get_connection()
-    cur = conn.execute(
-        "INSERT INTO avistamientos (especie, lugar, fecha, observador) VALUES (?, ?, ?, ?)",
-        (datos.especie, datos.lugar, datos.fecha, datos.observador),
-    )
-    conn.commit()
-    nuevo_id = cur.lastrowid
-    conn.close()
-    return {"id": nuevo_id, **datos.model_dump()}
+    creado = repositorio.guardar(Avistamiento(**datos.model_dump()))
+    return asdict(creado)
 
 
 @app.put("/avistamientos/{id}", response_model=AvistamientoOut)
@@ -90,24 +75,13 @@ def actualizar(id: int, datos: AvistamientoIn):
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    conn = get_connection()
-    cur = conn.execute(
-        "UPDATE avistamientos SET especie = ?, lugar = ?, fecha = ?, observador = ? WHERE id = ?",
-        (datos.especie, datos.lugar, datos.fecha, datos.observador, id),
-    )
-    conn.commit()
-    conn.close()
-    if cur.rowcount == 0:
+    if not repositorio.actualizar(Avistamiento(id=id, **datos.model_dump())):
         raise HTTPException(status_code=404, detail="Avistamiento no encontrado")
     return {"id": id, **datos.model_dump()}
 
 
 @app.delete("/avistamientos/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def eliminar(id: int):
-    conn = get_connection()
-    cur = conn.execute("DELETE FROM avistamientos WHERE id = ?", (id,))
-    conn.commit()
-    conn.close()
-    if cur.rowcount == 0:
+    if not repositorio.eliminar(id):
         raise HTTPException(status_code=404, detail="Avistamiento no encontrado")
     return Response(status_code=status.HTTP_204_NO_CONTENT)

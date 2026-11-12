@@ -7,6 +7,9 @@ al revés.
 """
 from abc import ABC, abstractmethod
 from datetime import date
+from typing import Optional
+
+from app.nucleo.modelo import Avistamiento
 
 
 class Reloj(ABC):
@@ -15,3 +18,32 @@ class Reloj(ABC):
     @abstractmethod
     def hoy(self) -> date:
         ...
+
+
+class RepositorioAvistamientos(ABC):
+    """Puerto de salida: guardar y recuperar avistamientos.
+    El núcleo no sabe si detrás hay SQLite, PostgreSQL o una lista en memoria."""
+
+    @abstractmethod
+    def listar(self) -> list[Avistamiento]:
+        ...
+
+    @abstractmethod
+    def obtener(self, id: int) -> Optional[Avistamiento]:
+        """Devuelve el avistamiento o None si no existe."""
+
+    @abstractmethod
+    def guardar(self, avistamiento: Avistamiento) -> Avistamiento:
+        """Guarda uno nuevo y lo devuelve con el id asignado."""
+
+    @abstractmethod
+    def actualizar(self, avistamiento: Avistamiento) -> bool:
+        """Devuelve False si el id no existe."""
+
+    @abstractmethod
+    def eliminar(self, id: int) -> bool:
+        """Devuelve False si el id no existe."""
+
+    @abstractmethod
+    def contar_por_especie(self) -> list[tuple[str, int]]:
+        """Pares (especie, total)."""
