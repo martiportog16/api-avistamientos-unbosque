@@ -4,7 +4,7 @@ Ingeniería de Software 2 (ISW-2)
 Martin Daniel Porto Gutierrez  
 Universidad El Bosque, 11 de noviembre de 2026  
 
-## 1. Parte 1. Investigación
+## 1. Investigación (Parte 1)
 
 ### Pregunta 1. Cockburn (2005): el problema, puertos, adaptadores y simetría
 
