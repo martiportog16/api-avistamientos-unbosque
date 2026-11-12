@@ -52,6 +52,10 @@ Por eso tomo una posición intermedia. Para una API de este tamaño, basta con u
 
 **Rama con el refactor:** [refactor-hexagonal](https://github.com/martiportog16/api-avistamientos-unbosque/tree/refactor-hexagonal)
 
+**Copia en Markdown de este documento:** [docs/Taller5_Clean_Architecture.md (rama refactor-hexagonal)](https://github.com/martiportog16/api-avistamientos-unbosque/blob/refactor-hexagonal/docs/Taller5_Clean_Architecture.md)
+
+Al abrir el repositorio, GitHub muestra por defecto la rama main. Para ver el refactor y este documento hay que seleccionar la rama refactor-hexagonal en el selector de ramas, o usar los enlaces anteriores.
+
 La rama main se dejó sin cambios y corresponde al estado anterior al refactor (el “antes”). La rama refactor-hexagonal contiene el refactor completo (el “después”). El refactor se hizo en commits pequeños; en cada uno la aplicación sigue funcionando:
 
 | Commit | Cambio |
