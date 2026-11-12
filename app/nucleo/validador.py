@@ -1,15 +1,14 @@
-from datetime import date, datetime
+from datetime import datetime
 
-
-class RelojSistema:
-    """Obtiene la fecha actual del sistema. En pruebas se reemplaza por un Stub."""
-    def hoy(self) -> date:
-        return date.today()
+from app.nucleo.puertos import Reloj
 
 
 class ValidadorDeAvistamiento:
-    def __init__(self, reloj=None):
-        self.reloj = reloj or RelojSistema()
+    """Regla de negocio del núcleo. No sabe qué reloj usa: lo recibe por el
+    puerto Reloj (en producción RelojSistema, en pruebas RelojFijoStub)."""
+
+    def __init__(self, reloj: Reloj):
+        self.reloj = reloj
 
     def validar(self, especie: str, lugar: str, fecha: str, observador: str) -> None:
         # Regla 1: la especie tiene entre 3 y 50 caracteres

@@ -4,10 +4,11 @@ from fastapi.responses import JSONResponse
 
 from app.database import get_connection, init_db
 from app.schemas import AvistamientoIn, AvistamientoOut
-from app.validador import ValidadorDeAvistamiento
+from app.adaptadores.salida.reloj_sistema import RelojSistema
+from app.nucleo.validador import ValidadorDeAvistamiento
 
 app = FastAPI(title="API de Avistamientos de Aves")
-validador = ValidadorDeAvistamiento()
+validador = ValidadorDeAvistamiento(reloj=RelojSistema())
 
 init_db()
 

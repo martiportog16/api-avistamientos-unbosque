@@ -1,6 +1,6 @@
 from datetime import date
 import pytest
-from app.validador import ValidadorDeAvistamiento
+from app.nucleo.validador import ValidadorDeAvistamiento
 
 
 class RelojFijoStub:
