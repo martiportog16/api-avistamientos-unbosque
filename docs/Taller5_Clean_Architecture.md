@@ -89,41 +89,65 @@ Los dos adaptadores de salida importan el puerto que implementan, y el adaptador
 
 ## 4. Evidencia de funcionamiento y cobertura
 
-Comando usado en los dos momentos: pytest --cov=app --cov-report=term-missing
+Las pruebas se ejecutaron en las dos ramas con el comando pytest --cov=app --cov-report=term-missing. Para la API se usó el script docs/verificar_api.py, que envía las mismas 8 peticiones (los seis endpoints más un caso de error 400 y uno 404) a la API en ejecución (uvicorn app.main:app). En las dos ramas se partió de una base de datos vacía, para que los resultados fueran comparables.
 
 ### Antes del refactor (rama main)
 
-[Pegar aquí la captura de la salida de las pruebas y del reporte de cobertura en la rama main.]
+![Figura 2. Pruebas y cobertura antes del refactor.](evidencia/antes_pruebas.png)
+
+*Figura 2. Pruebas y cobertura antes del refactor.*
+
+![Figura 3. Respuestas de la API antes del refactor.](evidencia/antes_api.png)
+
+*Figura 3. Respuestas de la API antes del refactor.*
 
 ### Después del refactor (rama refactor-hexagonal)
 
-[Pegar aquí la captura de la salida de las pruebas y del reporte de cobertura en la rama refactor-hexagonal.]
+![Figura 4. Pruebas y cobertura después del refactor.](evidencia/despues_pruebas.png)
+
+*Figura 4. Pruebas y cobertura después del refactor.*
+
+![Figura 5. Respuestas de la API después del refactor.](evidencia/despues_api.png)
+
+*Figura 5. Respuestas de la API después del refactor.*
 
 ### Resumen
 
 | Medida | Antes | Después |
 |---|---|---|
-| Pruebas que pasan | [ ] de 19 | [ ] de 19 |
-| Cobertura total | [ ] % | [ ] % |
+| Pruebas que pasan | 19 de 19 | 19 de 19 |
+| Cobertura total | 99 % | 99 % |
+| Líneas sin cubrir | 1 (validador.py, línea 29) | 1 (nucleo/validador.py, línea 28) |
+
+La cobertura se mantuvo en 99 %. La única línea sin cubrir es la misma en los dos momentos: el error de fecha vacía del validador, que ninguna prueba ejercita. Solo cambió su número de línea, porque el archivo se movió y cambiaron sus import. El total de sentencias pasó de 105 a 199 porque el refactor agregó archivos (puertos, servicio, modelo y adaptadores), y todas las sentencias nuevas quedaron cubiertas por las mismas pruebas.
 
 ### La API responde igual
 
-Se ejecutaron las mismas peticiones contra la API en las dos ramas (uvicorn app.main:app). El comando de arranque no cambió.
-
 | Petición | Esperado | Antes | Después |
 |---|---|---|---|
-| POST /avistamientos (datos válidos) | 201 | [ ] | [ ] |
-| POST /avistamientos (especie "ab") | 400 | [ ] | [ ] |
-| GET /avistamientos | 200 | [ ] | [ ] |
-| GET /avistamientos/1 | 200 | [ ] | [ ] |
-| GET /avistamientos/999 | 404 | [ ] | [ ] |
-| PUT /avistamientos/1 | 200 | [ ] | [ ] |
-| GET /avistamientos/resumen | 200 | [ ] | [ ] |
-| DELETE /avistamientos/1 | 204 | [ ] | [ ] |
+| POST /avistamientos (datos válidos) | 201 | 201 | 201 |
+| POST /avistamientos (especie "ab") | 400 | 400 | 400 |
+| GET /avistamientos | 200 | 200 | 200 |
+| GET /avistamientos/1 | 200 | 200 | 200 |
+| GET /avistamientos/999999 | 404 | 404 | 404 |
+| PUT /avistamientos/1 | 200 | 200 | 200 |
+| GET /avistamientos/resumen | 200 | 200 | 200 |
+| DELETE /avistamientos/1 | 204 | 204 | 204 |
 
-[Pegar aquí una captura de /docs o de las peticiones en cada rama.]
+Además de los códigos, los cuerpos de respuesta son idénticos en las dos ramas (figuras 3 y 5), incluidos los mensajes de error.
 
-Como verificación adicional, se probó el servicio del núcleo conectándolo a un repositorio en memoria, sin SQLite ni FastAPI, y todos los casos de uso funcionaron igual (incluidos los errores de validación y de avistamiento no encontrado). Esto muestra en la práctica que las reglas de negocio ya no dependen de la base de datos ni del framework.
+### Verificación de cada commit
+
+Como buena práctica, también se verificó que las pruebas pasaran en cada commit intermedio del refactor, para comprobar que ningún paso dejó la aplicación rota:
+
+| Commit | Descripción | Resultado |
+|---|---|---|
+| 9845879 | 1/4: validador al núcleo y puerto Reloj | 19 passed |
+| 34ae1a1 | 2/4: puerto de repositorio y adaptador SQLite | 19 passed |
+| 2501606 | 3/4: servicio de aplicación | 19 passed |
+| 3307319 | 4/4: rutas como adaptador de entrada | 19 passed |
+
+También se probó el servicio del núcleo conectándolo a un repositorio en memoria, sin SQLite ni FastAPI, y todos los casos de uso funcionaron igual (incluidos los errores de validación y de avistamiento no encontrado). Esto muestra en la práctica que las reglas de negocio ya no dependen de la base de datos ni del framework.
 
 ## 5. Lo más difícil de separar
 
