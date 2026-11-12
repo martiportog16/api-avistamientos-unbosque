@@ -8,23 +8,43 @@ Universidad El Bosque, 11 de noviembre de 2026
 
 ### Pregunta 1. Cockburn (2005): el problema, puertos, adaptadores y simetría
 
-[Escribir aquí la respuesta con sus palabras, citando (Cockburn, 2005).]
+Cockburn (2005) parte de un problema que veía repetirse: la lógica de negocio se mezcla con el código de la interfaz de usuario. Esto hace difícil escribir pruebas automáticas, porque la lógica queda atada a detalles visuales, e impide que la aplicación sea usada por otro programa o por un proceso por lotes en vez de una persona. Además, aunque los equipos crean capas nuevas prometiendo no meterles lógica de negocio, nada hace cumplir esa promesa y la lógica se vuelve a colar (Cockburn, 2005). El autor ve el mismo problema del lado de la base de datos: si la aplicación depende de una base real, no se puede trabajar cuando esa base no está disponible (Cockburn, 2005).
+
+Para resolverlo, propone que la aplicación se comunique con el exterior solo a través de puertos. Un puerto es una API definida según el propósito de la conversación, como un puerto de hardware al que se puede conectar cualquier dispositivo que cumpla su protocolo. Un adaptador es la pieza que traduce entre esa API y una tecnología concreta: una interfaz gráfica, una herramienta de pruebas, una base SQL o una base simulada en memoria. A un mismo puerto se le pueden conectar varios adaptadores (Cockburn, 2005).
+
+Hay simetría porque, para Cockburn, el usuario y la base de datos son ambos agentes externos que hablan con la aplicación por medio de puertos. Lo que importa no es izquierda o derecha, sino dentro o fuera. Cambiar la interfaz gráfica por una herramienta de pruebas, o una base SQL por un archivo plano, no debería alterar lo que pasa dentro de la aplicación. Por eso una sola solución resuelve los dos problemas (Cockburn, 2005).
 
 ### Pregunta 2. Martin (2012): los círculos y la regla de dependencia
 
-[Escribir aquí la respuesta con sus palabras, citando (Martin, 2012).]
+Martin (2012) dibuja cuatro círculos concéntricos. En el centro están las entidades, que son las reglas de negocio generales de la empresa y lo que menos cambia ante cambios externos. Luego vienen los casos de uso, que son las reglas propias de la aplicación y dirigen el flujo de datos hacia y desde las entidades. El tercer círculo son los adaptadores de interfaz, que convierten los datos entre el formato que usan los casos de uso y el formato de lo externo; aquí están los controladores, los presentadores y el código SQL. En el círculo exterior están los frameworks y drivers, como la base de datos y el framework web, donde casi solo hay código de conexión (Martin, 2012). Martin aclara que los cuatro círculos son solo un ejemplo: puede haber más o menos (Martin, 2012).
+
+La regla de dependencia dice que las dependencias del código fuente solo pueden apuntar hacia adentro. Prohíbe que algo de un círculo interno nombre cualquier cosa declarada en uno externo: una clase, una función o una variable. También prohíbe que los círculos internos usen formatos de datos de los externos, en especial los que genera un framework, para que los cambios de afuera no afecten lo de adentro (Martin, 2012).
 
 ### Pregunta 3. Cómo guarda datos el caso de uso sin depender de la base de datos
 
-[Escribir aquí la respuesta con un ejemplo, citando (Martin, 2012).]
+Clean Architecture resuelve la contradicción con el principio de inversión de dependencias. El caso de uso no llama directamente a la clase que guarda en la base de datos. En cambio, llama a una interfaz que se declara en su propio círculo, y la clase concreta, ubicada en un círculo externo, implementa esa interfaz. Así, durante la ejecución el control va del caso de uso hacia afuera, pero en el código fuente la dependencia apunta hacia adentro, porque es la clase de afuera la que conoce la interfaz de adentro (Martin, 2012). Martin lo explica con un caso de uso que debe entregar resultados a un presentador externo a través de una interfaz de salida (Martin, 2012). Palermo describe el mismo mecanismo para los datos: las interfaces de los repositorios viven en el centro y sus implementaciones en la infraestructura, y se inyectan al ejecutar la aplicación (Palermo, 2008).
+
+En la API de avistamientos, por ejemplo, el servicio de casos de uso necesita guardar un avistamiento. Para eso usa la interfaz RepositorioAvistamientos, que está dentro del núcleo y solo declara métodos como guardar u obtener. La clase RepositorioSQLite, que está fuera, implementa esa interfaz con consultas SQL. Al arrancar, main.py crea el repositorio SQLite y se lo entrega al servicio. El servicio nunca importa nada de SQLite, así que se podría cambiar la base de datos sin tocar los casos de uso.
 
 ### Pregunta 4. Comparación entre hexagonal, cebolla y Clean Architecture
 
-[Escribir aquí la comparación, citando (Cockburn, 2005), (Palermo, 2008) y (Martin, 2012).]
+Las tres arquitecturas comparten la misma idea central: las reglas de negocio van en el centro y no dependen de nada externo, mientras que la base de datos, la interfaz y los frameworks quedan en el borde como detalles reemplazables. Las tres logran esto con interfaces definidas por el núcleo e implementadas afuera, de modo que las dependencias apuntan hacia adentro. El mismo Martin (2012) dice que las arquitecturas anteriores, incluidas la de Cockburn y la de Palermo, varían en los detalles pero buscan el mismo objetivo: separar responsabilidades para que el sistema sea fácil de probar e independiente de frameworks, interfaz y base de datos. Palermo (2008) también relaciona su propuesta con la de Cockburn.
+
+Lo que cambia de una a otra es lo siguiente:
+
+- El vocabulario: Cockburn habla de puertos y adaptadores (Cockburn, 2005); Palermo, de un modelo de dominio rodeado de capas (Palermo, 2008); y Martin, de entidades, casos de uso, adaptadores de interfaz y frameworks (Martin, 2012).
+- El número de capas: Cockburn solo distingue dentro y fuera, y aclara que los seis lados del hexágono no tienen significado (Cockburn, 2005). Palermo pone varias capas alrededor del modelo de dominio, pero dice que su número depende de cada aplicación (Palermo, 2008). Martin propone cuatro círculos, aunque aclara que son ilustrativos (Martin, 2012).
+- El énfasis: Cockburn se enfoca en la simetría entre el lado del usuario y el de la base de datos, y en poder manejar y probar la aplicación sin interfaz ni base real (Cockburn, 2005). Palermo parte de una crítica a la arquitectura por capas tradicional, donde todo termina dependiendo del acceso a datos (Palermo, 2008). Martin presenta su propuesta como una síntesis, resumida en una sola regla explícita, y agrega reglas sobre qué datos pueden cruzar las fronteras (Martin, 2012).
 
 ### Pregunta 5. ¿Se justifica aplicar Clean Architecture a esta API?
 
-[Escribir aquí la posición, con al menos un costo y un beneficio concretos, y sus citas.]
+Considero que no se justifica aplicar Clean Architecture completa a esta API, pero sí una separación más liviana entre el núcleo y la tecnología.
+
+El costo es concreto. Al aplicar la arquitectura hexagonal en este taller, el proyecto pasó de 4 a 10 archivos de código (sin contar los __init__.py) y de 105 a 199 sentencias, sin agregar ninguna funcionalidad. Clean Architecture completa costaría aún más: con cuatro círculos (Martin, 2012), cada uno de los seis endpoints necesitaría su propio caso de uso, con sus estructuras de entrada y salida y su presentador, y la mayoría de esas clases solo pasarían datos de un lado a otro. El mismo Palermo (2008) aclara que su propuesta está pensada para aplicaciones empresariales complejas y de larga vida, y no para sitios pequeños.
+
+Al mismo tiempo, hay un beneficio real y también concreto. Martin (2012) señala que separar las reglas de negocio permite probarlas sin base de datos ni servidor web. En este taller eso se comprobó: el servicio funcionó conectado a un repositorio en memoria, sin SQLite ni FastAPI. Además, cambiar SQLite por otra base solo exigiría escribir un adaptador nuevo y cambiar una línea en main.py.
+
+Por eso tomo una posición intermedia. Para una API de este tamaño, basta con una separación de solo dos zonas, dentro y fuera, como propone Cockburn (2005). Esa separación da el beneficio principal, que es probar y cambiar la tecnología sin tocar la regla de negocio, sin pagar el costo de todas las capas de Clean Architecture. Si la API creciera en reglas y endpoints, se podría agregar más capas después.
 
 ## 2. Repositorio
 
@@ -159,8 +179,8 @@ Por último, el validador creaba su propio RelojSistema cuando no recibía uno. 
 
 ## Referencias
 
-Cockburn, A. (2005). Hexagonal architecture. https://alistair.cockburn.us/hexagonal-architecture/
+Cockburn, A. (2005, 4 de septiembre). Hexagonal architecture. https://alistair.cockburn.us/hexagonal-architecture/
 
 Martin, R. C. (2012, 13 de agosto). The Clean Architecture. The Clean Code Blog. https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html
 
-Palermo, J. (2008). The Onion Architecture: part 1. https://jeffreypalermo.com/2008/07/the-onion-architecture-part-1/
+Palermo, J. (2008, 29 de julio). The Onion Architecture: part 1. https://jeffreypalermo.com/2008/07/the-onion-architecture-part-1/
