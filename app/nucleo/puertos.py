@@ -17,7 +17,7 @@ class Reloj(ABC):
 
     @abstractmethod
     def hoy(self) -> date:
-        ...
+        """Devuelve la fecha de hoy."""
 
 
 class RepositorioAvistamientos(ABC):
@@ -26,7 +26,7 @@ class RepositorioAvistamientos(ABC):
 
     @abstractmethod
     def listar(self) -> list[Avistamiento]:
-        ...
+        """Devuelve todos los avistamientos."""
 
     @abstractmethod
     def obtener(self, id: int) -> Optional[Avistamiento]:
